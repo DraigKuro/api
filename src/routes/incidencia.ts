@@ -3,8 +3,8 @@ import { createIncidencia, getAllIncidencias, getIncidenciaById } from "../contr
 
 const router = Router();
 
-router.post("/", createIncidencia);
 router.get("/", getAllIncidencias);
 router.get("/:id", getIncidenciaById);
 
+router.post("/", createIncidencia);
 export default router;

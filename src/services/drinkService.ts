@@ -1,41 +1,64 @@
 import { Drink } from "../models/drink";
+import { ServiceError } from "../utils/errors";
 
 export const getAll = async () => {
-    return await Drink.find({ deletedAt: null });
+    try {
+        return await Drink.find({ deletedAt: null });
+    } catch {
+        throw ServiceError("Error al obtener las bebidas");
+    }
 };
 
 export const getById = async (id: string) => {
-    return await Drink.findById(id);
+    try {
+        return await Drink.findById(id);
+    } catch {
+        throw ServiceError("Error al obtener la bebida por ID");
+    }
 };
 
 export const create = async (data: any, file?: Express.Multer.File) => {
-    const preparedData = {
-        nombre: data.name,
-        tipo: data.categoria,
-        descripcion: data.description,
-        precio: Number(data.price),
-        activo: data.activo === "true" || data.activo === true,
-        imagen: file ? `/uploads/${file.filename}` : null,
-    };
+    try {
+        const preparedData = {
+            nombre: data.name,
+            tipo: data.categoria,
+            descripcion: data.description,
+            precio: Number(data.price),
+            activo: data.activo === "true" || data.activo === true,
+            imagen: file ? `/uploads/${file.filename}` : null,
+        };
 
-    const drink = new Drink(preparedData);
-    return await drink.save();
+        const drink = new Drink(preparedData);
+        return await drink.save();
+    } catch {
+        throw ServiceError("Error al crear la bebida");
+    }
 };
 
 export const update = async (id: string, data: any, file?: Express.Multer.File) => {
-    const updatedData: any = {
-        ...data,
-        precio: data.precio !== undefined ? Number(data.precio) : undefined,
-        activo: data.activo !== undefined ? data.activo === "true" || data.activo === true : undefined,
-    };
+    try {
+        const updatedData: any = {
+            ...data,
+            precio: data.precio !== undefined ? Number(data.precio) : undefined,
+            activo: data.activo !== undefined
+                ? data.activo === "true" || data.activo === true
+                : undefined,
+        };
 
-    if (file) {
-        updatedData.imagen = `/uploads/${file.filename}`;
+        if (file) {
+            updatedData.imagen = `/uploads/${file.filename}`;
+        }
+
+        return await Drink.findByIdAndUpdate(id, updatedData, { new: true });
+    } catch {
+        throw ServiceError("Error al actualizar la bebida");
     }
-
-    return await Drink.findByIdAndUpdate(id, updatedData, { new: true });
 };
 
 export const remove = async (id: string) => {
-   return await Drink.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    try {
+        return await Drink.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    } catch {
+        throw ServiceError("Error al eliminar la bebida");
+    }
 };

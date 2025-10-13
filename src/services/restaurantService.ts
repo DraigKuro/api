@@ -1,8 +1,13 @@
 import Restaurant, { IRestaurant } from "../models/restaurant";
 import { deleteFile } from "../config/multer";
+import { ServiceError } from "../utils/errors";
 
 export const getRestaurant = async (): Promise<IRestaurant | null> => {
-    return await Restaurant.findOne();
+    try {
+        return await Restaurant.findOne();
+    } catch {
+        throw ServiceError("Error al obtener la información del restaurante");
+    }
 };
 
 export const updateBasicInfo = async (data: {
@@ -10,20 +15,23 @@ export const updateBasicInfo = async (data: {
     cif?: string | null;
     openingHours?: { open?: string | null; close?: string | null };
 }): Promise<IRestaurant> => {
-    return await Restaurant.findOneAndUpdate(
-        {},
-        {
-            name: data.name || "",
-            cif: data.cif || "",
-            openingHours: {
-                open: data.openingHours?.open || "",
-                close: data.openingHours?.close || "",
+    try {
+        return await Restaurant.findOneAndUpdate(
+            {},
+            {
+                name: data.name || "",
+                cif: data.cif || "",
+                openingHours: {
+                    open: data.openingHours?.open || "",
+                    close: data.openingHours?.close || "",
+                },
             },
-        },
-        { new: true, upsert: true }
-    );
+            { new: true, upsert: true }
+        );
+    } catch {
+        throw ServiceError("Error al actualizar la información básica del restaurante");
+    }
 };
-
 
 export const updateContactInfo = async (data: {
     email?: string;
@@ -35,34 +43,38 @@ export const updateContactInfo = async (data: {
         tiktok?: { enabled: boolean; url?: string | null };
     };
 }): Promise<IRestaurant> => {
-    const socialLinks = {
-        facebook: {
-            enabled: data.socialLinks?.facebook?.enabled ?? false,
-            url: data.socialLinks?.facebook?.url || "",
-        },
-        instagram: {
-            enabled: data.socialLinks?.instagram?.enabled ?? false,
-            url: data.socialLinks?.instagram?.url || "",
-        },
-        twitter: {
-            enabled: data.socialLinks?.twitter?.enabled ?? false,
-            url: data.socialLinks?.twitter?.url || "",
-        },
-        tiktok: {
-            enabled: data.socialLinks?.tiktok?.enabled ?? false,
-            url: data.socialLinks?.tiktok?.url || "",
-        },
-    };
+    try {
+        const socialLinks = {
+            facebook: {
+                enabled: data.socialLinks?.facebook?.enabled ?? false,
+                url: data.socialLinks?.facebook?.url || "",
+            },
+            instagram: {
+                enabled: data.socialLinks?.instagram?.enabled ?? false,
+                url: data.socialLinks?.instagram?.url || "",
+            },
+            twitter: {
+                enabled: data.socialLinks?.twitter?.enabled ?? false,
+                url: data.socialLinks?.twitter?.url || "",
+            },
+            tiktok: {
+                enabled: data.socialLinks?.tiktok?.enabled ?? false,
+                url: data.socialLinks?.tiktok?.url || "",
+            },
+        };
 
-    return await Restaurant.findOneAndUpdate(
-        {},
-        {
-            email: data.email || "",
-            phone: data.phone || "",
-            socialLinks,
-        },
-        { new: true, upsert: true }
-    );
+        return await Restaurant.findOneAndUpdate(
+            {},
+            {
+                email: data.email || "",
+                phone: data.phone || "",
+                socialLinks,
+            },
+            { new: true, upsert: true }
+        );
+    } catch {
+        throw ServiceError("Error al actualizar la información de contacto del restaurante");
+    }
 };
 
 export const updateAddressInfo = async (data: {
@@ -70,32 +82,43 @@ export const updateAddressInfo = async (data: {
     reference?: string | null;
     mapUrl?: string | null;
 }): Promise<IRestaurant> => {
-    return await Restaurant.findOneAndUpdate(
-        {},
-        {
-            address: data.address || "",
-            reference: data.reference || "",
-            mapUrl: data.mapUrl || "",
-        },
-        { new: true, upsert: true }
-    );
+    try {
+        return await Restaurant.findOneAndUpdate(
+            {},
+            {
+                address: data.address || "",
+                reference: data.reference || "",
+                mapUrl: data.mapUrl || "",
+            },
+            { new: true, upsert: true }
+        );
+    } catch {
+        throw ServiceError("Error al actualizar la dirección del restaurante");
+    }
 };
 
 export const updateLogo = async (data: { logoUrl?: string }): Promise<IRestaurant> => {
-    return await Restaurant.findOneAndUpdate({}, data, { new: true, upsert: true });
+    try {
+        return await Restaurant.findOneAndUpdate({}, data, { new: true, upsert: true });
+    } catch {
+        throw ServiceError("Error al actualizar el logo del restaurante");
+    }
 };
 
 export const removeLogo = async (restaurantId: any) => {
-    const restaurant = await Restaurant.findById(restaurantId);
-    if (!restaurant) {
-        throw new Error("Restaurante no encontrado");
-    }
+    try {
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) throw ServiceError("Restaurante no encontrado");
 
-    if (restaurant.logoUrl) {
-        deleteFile(restaurant.logoUrl);
-        restaurant.logoUrl = "";
-        await restaurant.save();
-    }
+        if (restaurant.logoUrl) {
+            deleteFile(restaurant.logoUrl);
+            restaurant.logoUrl = "";
+            await restaurant.save();
+        }
 
-    return restaurant;
+        return restaurant;
+    } catch (err: any) {
+        if (err.message === "Restaurante no encontrado") throw err;
+        throw ServiceError("Error al eliminar el logo del restaurante");
+    }
 };

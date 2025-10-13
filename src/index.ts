@@ -12,6 +12,8 @@ import promotionRoutes from "./routes/promotion";
 import tableRoutes from "./routes/table";
 import incidenciaRoutes from "./routes/incidencia";
 
+import { errorHandler } from "./middlewares/errorHandler";
+
 dotenv.config();
 
 const app = express();
@@ -32,6 +34,8 @@ app.use("/menus", menuRoutes);
 app.use("/promotions", promotionRoutes);
 app.use("/tables", tableRoutes);
 app.use("/incidencias", incidenciaRoutes);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`API corriendo en http://localhost:${PORT}`);

@@ -1,71 +1,61 @@
 import { Request, Response } from "express";
 import * as promotionService from "../services/promotionService";
 import { deleteFile } from "../config/multer";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ControllerError } from "../utils/errors";
 
-export const getAllPromotions = async (_req: Request, res: Response) => {
-    try {
-        const promotions = await promotionService.getAll();
-        res.json(promotions);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener promociones" });
+export const getAllPromotions = asyncHandler(async (_req: Request, res: Response) => {
+    const promotions = await promotionService.getAll();
+    res.json(promotions);
+});
+
+export const getPromotionById = asyncHandler(async (req: Request, res: Response) => {
+    const promotion = await promotionService.getById(req.params.id);
+    if (!promotion) throw ControllerError(404, "Promoción no encontrada");
+    res.json(promotion);
+});
+
+export const createPromotion = asyncHandler(async (req: Request, res: Response) => {
+    const data = req.body;
+
+    if (!req.file) {
+        throw ControllerError(400, "La imagen es obligatoria");
     }
-};
 
-export const getPromotionById = async (req: Request, res: Response) => {
-    try {
-        const promotion = await promotionService.getById(req.params.id);
-        if (!promotion) return res.status(404).json({ error: "Promoción no encontrada" });
-        res.json(promotion);
-    } catch (error) {
-        res.status(500).json({ error: "Error al obtener la promoción" });
-    }
-};
+    data.imagen = `/uploads/${req.file.filename}`;
+    const newPromotion = await promotionService.create(data, req.file);
 
-export const createPromotion = async (req: Request, res: Response) => {
-    try {
-        const data = req.body;
+    res.status(201).json(newPromotion);
+});
 
-        if (!req.file) {
-            return res.status(400).json({ error: "La imagen es obligatoria" });
+export const updatePromotion = asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const data = req.body;
+
+    const promotion = await promotionService.getById(id);
+    if (!promotion) throw ControllerError(404, "Promoción no encontrada");
+
+    if (req.file) {
+        if (promotion.imagen) {
+            deleteFile(promotion.imagen);
         }
         data.imagen = `/uploads/${req.file.filename}`;
-
-        const newPromotion = await promotionService.create(data, req.file);
-        res.status(201).json(newPromotion);
-    } catch (error) {
-        res.status(500).json({ error: "Error al crear la promoción" });
     }
-};
 
-export const updatePromotion = async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        const data = req.body;
+    const updated = await promotionService.update(id, data, req.file);
+    res.json(updated);
+});
 
-        const promotion = await promotionService.getById(id);
-        if (!promotion) return res.status(404).json({ error: "Promoción no encontrada" });
+export const deletePromotion = asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id;
 
-        if (req.file) {
-            if (promotion.imagen) deleteFile(promotion.imagen);
-            data.imagen = `/uploads/${req.file.filename}`;
-        }
+    const promotion = await promotionService.getById(id);
+    if (!promotion) throw ControllerError(404, "Promoción no encontrada");
 
-        const updated = await promotionService.update(id, data, req.file);
-        res.json(updated);
-    } catch (error) {
-        res.status(500).json({ error: "Error al actualizar la promoción" });
+    if (promotion.imagen) {
+        deleteFile(promotion.imagen);
     }
-};
 
-export const deletePromotion = async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        const promotion = await promotionService.getById(id);
-        if (!promotion) return res.status(404).json({ error: "Promoción no encontrada" });
-
-        await promotionService.remove(id);
-        res.json({ message: "Promoción eliminada correctamente" });
-    } catch (error) {
-        res.status(500).json({ error: "Error al eliminar la promoción" });
-    }
-};
+    await promotionService.remove(id);
+    res.json({ message: "Promoción eliminada correctamente" });
+});

@@ -17,30 +17,22 @@ export const getDishById = asyncHandler(async (req: Request, res: Response) => {
 
 export const createDish = asyncHandler(async (req: Request, res: Response) => {
     const data = req.body;
-
-    if (req.file) {
-        data.imagen = `/uploads/${req.file.filename}`;
-    }
-
-    const newDish = await dishService.create(data);
+    const newDish = await dishService.create(data, req.file);
     res.status(201).json(newDish);
 });
 
 export const updateDish = asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id;
     const data = req.body;
-
+    
     const dish = await dishService.getById(id);
     if (!dish) throw ControllerError(404, "Plato no encontrado");
 
-    if (req.file) {
-        if (dish.imagen) {
-            deleteFile(dish.imagen);
-        }
-        data.imagen = `/uploads/${req.file.filename}`;
+    if (req.file && dish.imagen) {
+        deleteFile(dish.imagen);
     }
 
-    const updated = await dishService.update(id, data);
+    const updated = await dishService.update(id, data, req.file);
     res.json(updated);
 });
 

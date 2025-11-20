@@ -1,5 +1,6 @@
 import { Drink } from "../models/drink";
 import { ServiceError } from "../utils/errors";
+import { STORAGE_TYPE } from "../config/multer";
 
 export const getAll = async () => {
     try {
@@ -25,7 +26,11 @@ export const create = async (data: any, file?: Express.Multer.File) => {
             descripcion: data.description,
             precio: Number(data.price),
             activo: data.activo === "true" || data.activo === true,
-            imagen: file ? `/uploads/${file.filename}` : null,
+            imagen: file ? (
+                STORAGE_TYPE === 'local'
+                    ? `/uploads/${file.filename}`
+                    : (file as any).location
+            ) : null,
         };
 
         const drink = new Drink(preparedData);
@@ -46,7 +51,9 @@ export const update = async (id: string, data: any, file?: Express.Multer.File) 
         };
 
         if (file) {
-            updatedData.imagen = `/uploads/${file.filename}`;
+            updatedData.imagen = STORAGE_TYPE === 'local'
+                ? `/uploads/${file.filename}`
+                : (file as any).location;
         }
 
         return await Drink.findByIdAndUpdate(id, updatedData, { new: true });

@@ -21,8 +21,6 @@ export const createMenu = asyncHandler(async (req: Request, res: Response) => {
     if (!req.file) {
         throw ControllerError(400, "La imagen es obligatoria");
     }
-
-    data.imagen = `/uploads/${req.file.filename}`;
     const newMenu = await menuService.create(data, req.file);
 
     res.status(201).json(newMenu);
@@ -39,7 +37,6 @@ export const updateMenu = asyncHandler(async (req: Request, res: Response) => {
         if (menu.imagen) {
             deleteFile(menu.imagen);
         }
-        data.imagen = `/uploads/${req.file.filename}`;
     }
 
     const updated = await menuService.update(id, data, req.file);

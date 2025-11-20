@@ -28,8 +28,7 @@ export const updateLogo = asyncHandler(async (req: Request, res: Response) => {
         throw ControllerError(400, "No se subió ningún archivo");
     }
 
-    const logoUrl = `/uploads/${req.file.filename}`;
-    const updated = await restaurantService.updateLogo({ logoUrl });
+    const updated = await restaurantService.updateLogo({}, req.file);
     res.json(updated);
 });
 

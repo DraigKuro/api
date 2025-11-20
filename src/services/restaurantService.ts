@@ -1,5 +1,5 @@
 import Restaurant, { IRestaurant } from "../models/restaurant";
-import { deleteFile } from "../config/multer";
+import { deleteFile, STORAGE_TYPE } from "../config/multer";
 import { ServiceError } from "../utils/errors";
 
 export const getRestaurant = async (): Promise<IRestaurant | null> => {
@@ -97,9 +97,17 @@ export const updateAddressInfo = async (data: {
     }
 };
 
-export const updateLogo = async (data: { logoUrl?: string }): Promise<IRestaurant> => {
+export const updateLogo = async (data: { logoUrl?: string }, file?: Express.Multer.File): Promise<IRestaurant> => {
     try {
-        return await Restaurant.findOneAndUpdate({}, data, { new: true, upsert: true });
+        const updateData = { ...data };
+
+        if (file) {
+            updateData.logoUrl = STORAGE_TYPE === 'local'
+                ? `/uploads/${file.filename}`
+                : (file as any).location;
+        }
+
+        return await Restaurant.findOneAndUpdate({}, updateData, { new: true, upsert: true });
     } catch {
         throw ServiceError("Error al actualizar el logo del restaurante");
     }

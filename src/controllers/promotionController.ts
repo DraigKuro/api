@@ -21,8 +21,6 @@ export const createPromotion = asyncHandler(async (req: Request, res: Response) 
     if (!req.file) {
         throw ControllerError(400, "La imagen es obligatoria");
     }
-
-    data.imagen = `/uploads/${req.file.filename}`;
     const newPromotion = await promotionService.create(data, req.file);
 
     res.status(201).json(newPromotion);
@@ -39,7 +37,6 @@ export const updatePromotion = asyncHandler(async (req: Request, res: Response) 
         if (promotion.imagen) {
             deleteFile(promotion.imagen);
         }
-        data.imagen = `/uploads/${req.file.filename}`;
     }
 
     const updated = await promotionService.update(id, data, req.file);

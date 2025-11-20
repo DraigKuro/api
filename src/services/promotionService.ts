@@ -1,5 +1,6 @@
 import { Promotion } from "../models/promotion";
 import { ServiceError } from "../utils/errors";
+import { STORAGE_TYPE } from "../config/multer";
 
 export const getAll = async () => {
     try {
@@ -37,7 +38,11 @@ export const create = async (data: any, file?: Express.Multer.File) => {
             precio: Number(data.precio),
             cantidad: Number(data.cantidad),
             activo: data.activo === "true" || data.activo === true,
-            imagen: file ? `/uploads/${file.filename}` : "",
+            imagen: file ? (
+                STORAGE_TYPE === 'local'
+                    ? `/uploads/${file.filename}`
+                    : (file as any).location
+            ) : "",
         };
 
         const promo = new Promotion(preparedData);
@@ -62,7 +67,9 @@ export const update = async (id: string, data: any, file?: Express.Multer.File) 
         };
 
         if (file) {
-            updatedData.imagen = `/uploads/${file.filename}`;
+            updatedData.imagen = STORAGE_TYPE === 'local'
+                ? `/uploads/${file.filename}`
+                : (file as any).location;
         }
 
         return await Promotion.findByIdAndUpdate(id, updatedData, { new: true });

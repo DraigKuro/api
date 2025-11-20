@@ -17,11 +17,6 @@ export const getDrinkById = asyncHandler(async (req: Request, res: Response) => 
 
 export const createDrink = asyncHandler(async (req: Request, res: Response) => {
     const data = req.body;
-
-    if (req.file) {
-        data.imagen = `/uploads/${req.file.filename}`;
-    }
-
     const newDrink = await drinkService.create(data, req.file);
     res.status(201).json(newDrink);
 });
@@ -33,11 +28,8 @@ export const updateDrink = asyncHandler(async (req: Request, res: Response) => {
     const drink = await drinkService.getById(id);
     if (!drink) throw ControllerError(404, "Bebida no encontrada");
 
-    if (req.file) {
-        if (drink.imagen) {
-            deleteFile(drink.imagen);
-        }
-        data.imagen = `/uploads/${req.file.filename}`;
+    if (req.file && drink.imagen) {
+        deleteFile(drink.imagen);
     }
 
     const updated = await drinkService.update(id, data, req.file);

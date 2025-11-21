@@ -38,5 +38,5 @@ app.use("/incidencias", incidenciaRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`API corriendo en http://localhost:${PORT}`);
+  console.log(`API correctamente iniciado en el puerto ${PORT}`);
 });

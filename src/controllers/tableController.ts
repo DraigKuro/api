@@ -12,7 +12,8 @@ export const getTableByUid = asyncHandler(async (req: Request, res: Response) =>
     const { uid } = req.params;
     const table = await tableService.getByUid(uid);
     if (!table) throw ControllerError(404, "Mesa no encontrada");
-    res.json(table);
+    if (table.estado === true)throw ControllerError(409, "La mesa está ocupada");
+    res.json(table.nombre);
 });
 
 export const createTable = asyncHandler(async (req: Request, res: Response) => {

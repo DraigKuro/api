@@ -11,9 +11,9 @@ export const getAll = async (): Promise<TableDocument[]> => {
     }
 };
 
-export const getByUid = async (uid: string): Promise<Pick<TableDocument, "nombre"> | null> => {
+export const getByUid = async (uid: string): Promise<TableDocument | null> => {
     try {
-        const table = await Table.findOne({ uid, deletedAt: null }).select("nombre");
+        const table = await Table.findOne({ uid, deletedAt: null });
         return table;
     } catch (err) {
         throw ServiceError("Error al obtener la mesa por UID");
@@ -23,7 +23,7 @@ export const getByUid = async (uid: string): Promise<Pick<TableDocument, "nombre
 export const create = async (data: Partial<TableDocument>): Promise<TableDocument> => {
     try {
         const uid = uuidv4();
-        const qrUrl = `${process.env.FRONTEND_URL}/mesa/${uid}`;
+        const qrUrl = uid;
 
         const table = new Table({
             ...data,

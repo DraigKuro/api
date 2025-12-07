@@ -1,5 +1,7 @@
-import express from 'express';
 import dotenv from "dotenv";
+dotenv.config();
+
+import express from 'express';
 import path from "path";
 import cors from "cors";
 import connectDB from "./config/db";
@@ -11,10 +13,11 @@ import menuRoutes from "./routes/menu";
 import promotionRoutes from "./routes/promotion";
 import tableRoutes from "./routes/table";
 import incidenciaRoutes from "./routes/incidencia";
+import authRoutes from "./routes/authRoutes";
 
 import { errorHandler } from "./middlewares/errorHandler";
 
-dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -34,6 +37,7 @@ app.use("/menus", menuRoutes);
 app.use("/promotions", promotionRoutes);
 app.use("/tables", tableRoutes);
 app.use("/incidencias", incidenciaRoutes);
+app.use("/api/auth", authRoutes);
 
 app.use(errorHandler);
 

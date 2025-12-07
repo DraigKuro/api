@@ -18,7 +18,7 @@ export const getDishById = asyncHandler(async (req: Request, res: Response) => {
 export const createDish = asyncHandler(async (req: Request, res: Response) => {
     const data = req.body;
     const newDish = await dishService.create(data, req.file);
-    res.status(201).json(newDish);
+    res.json(newDish);
 });
 
 export const updateDish = asyncHandler(async (req: Request, res: Response) => {
